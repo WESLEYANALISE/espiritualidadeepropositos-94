@@ -1,0 +1,251 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Elegant dark jurídico theme */
+    --background: 215 28% 5%;
+    --foreground: 210 20% 98%;
+
+    --card: 215 25% 8%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 215 25% 9%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 43 96% 72%;
+    --primary-foreground: 215 28% 5%;
+    --primary-glow: 43 96% 82%;
+
+    --secondary: 215 20% 12%;
+    --secondary-foreground: 210 20% 88%;
+
+    --muted: 215 20% 10%;
+    --muted-foreground: 210 12% 65%;
+
+    --accent: 215 20% 14%;
+    --accent-foreground: 210 20% 92%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 215 20% 16%;
+    --input: 215 20% 12%;
+    --ring: 43 96% 72%;
+
+    --radius: 0.875rem;
+
+    /* Elegant custom tokens */
+    --primary-gold: 43 96% 72%;
+    --primary-gold-foreground: 215 28% 5%;
+    --surface-elevated: 215 25% 11%;
+    --surface-glass: 215 25% 8% / 0.95;
+    --surface-luxury: 215 25% 13%;
+    
+    /* Enhanced gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(43 96% 72%), hsl(38 88% 68%));
+    --gradient-surface: linear-gradient(145deg, hsl(215 25% 8%), hsl(215 28% 6%));
+    --gradient-card: linear-gradient(145deg, hsl(215 25% 9%), hsl(215 22% 7%));
+    --gradient-luxury: linear-gradient(135deg, hsl(43 96% 72% / 0.1), hsl(38 88% 68% / 0.05));
+    
+    /* Refined shadows */
+    --shadow-card: 0 4px 24px -4px hsl(215 28% 3% / 0.3), 0 0 0 1px hsl(215 20% 16%);
+    --shadow-elevated: 0 12px 40px -8px hsl(215 28% 3% / 0.4), 0 0 0 1px hsl(215 20% 18%);
+    --shadow-luxury: 0 20px 60px -12px hsl(215 28% 2% / 0.6), 0 0 0 1px hsl(43 96% 72% / 0.1);
+    --shadow-glow: 0 0 40px hsl(43 96% 72% / 0.15);
+    
+    /* Smooth animations */
+    --animation-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --animation-bounce: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --animation-gentle: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --animation-elastic: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Same as root since we're dark-first */
+    --background: 210 24% 6%;
+    --foreground: 210 20% 98%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Enhanced animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  .animate-bounce-in {
+    animation: bounceIn 0.8s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  @keyframes glow {
+    from { box-shadow: 0 0 20px hsl(var(--primary) / 0.5); }
+    to { box-shadow: 0 0 30px hsl(var(--primary) / 0.8); }
+  }
+  
+  @keyframes slideUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%) skewX(-12deg);
+    }
+    100% {
+      transform: translateX(200%) skewX(-12deg);
+    }
+  }
+  
+  /* Interactive elements */
+  .hover-lift {
+    transition: var(--animation-smooth);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevated);
+  }
+  
+  /* Smooth state transitions */
+  .transition-smooth {
+    transition: var(--animation-smooth);
+  }
+  
+  .transition-bounce {
+    transition: var(--animation-bounce);
+  }
+  
+  /* Page animations */
+  .page-enter {
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-luxury);
+  }
+  
+  /* Glass morphism effect */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
