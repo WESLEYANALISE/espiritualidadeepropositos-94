@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Clock } from 'lucide-react';
+import { BookOpen, Clock, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { BookItem } from '@/pages/Index';
 
 interface ReadingProgress {
   id: string;
@@ -13,9 +14,13 @@ interface ReadingProgress {
   is_currently_reading: boolean;
 }
 
+interface ReadingBook extends ReadingProgress {
+  book_data?: BookItem;
+}
+
 export default function Lendo() {
   const { user } = useAuth();
-  const [readingBooks, setReadingBooks] = useState<ReadingProgress[]>([]);
+  const [readingBooks, setReadingBooks] = useState<ReadingBook[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +36,42 @@ export default function Lendo() {
           .order('last_accessed_at', { ascending: false });
 
         if (error) throw error;
-        setReadingBooks(data || []);
+        
+        const booksWithData: ReadingBook[] = [];
+        
+        // Fetch book details for each reading progress
+        for (const progress of data || []) {
+          try {
+            const { data: bookData } = await supabase
+              .from("01. LIVROS-APP-NOVO" as any)
+              .select("*")
+              .eq("id", progress.book_id)
+              .single();
+            
+            if (bookData && typeof bookData === 'object' && !('error' in bookData!)) {
+              const book = bookData as any;
+              booksWithData.push({
+                ...progress,
+                book_data: {
+                  id: book?.id ?? progress.book_id,
+                  livro: book?.livro ?? 'Livro sem título',
+                  autor: book?.autor ?? 'Autor não especificado',
+                  sobre: book?.sobre ?? '',
+                  imagem: book?.imagem ?? '',
+                  link: book?.link ?? '',
+                  download: book?.download ?? '',
+                  beneficios: book?.beneficios ?? ''
+                }
+              });
+            }
+          } catch (bookError) {
+            console.error('Error fetching book data for ID:', progress.book_id, bookError);
+            // Still add the progress without book data
+            booksWithData.push(progress);
+          }
+        }
+        
+        setReadingBooks(booksWithData);
       } catch (error) {
         console.error('Error fetching reading progress:', error);
       } finally {
@@ -95,27 +135,67 @@ export default function Lendo() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {readingBooks.map((progress) => (
-              <Card key={progress.id} className="bg-gradient-card border-primary/20">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-foreground">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                    Livro ID: {progress.book_id}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      Último acesso: {new Date(progress.last_accessed_at).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                  <div className="mt-3 text-sm">
-                    <span className="text-muted-foreground">Iniciado em: </span>
-                    <span className="text-foreground">
-                      {new Date(progress.started_reading_at).toLocaleDateString('pt-BR')}
-                    </span>
+              <Card key={progress.id} className="bg-gradient-card border-primary/20 hover:shadow-luxury transition-all duration-300">
+                <CardContent className="p-4">
+                  <div className="flex gap-3">
+                    {/* Book Cover */}
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-20 bg-gradient-primary rounded-lg flex items-center justify-center overflow-hidden shadow-card">
+                        {progress.book_data?.imagem ? (
+                          <img 
+                            src={progress.book_data.imagem} 
+                            alt={progress.book_data.livro} 
+                            className="w-full h-full object-cover" 
+                          />
+                        ) : (
+                          <BookOpen className="h-6 w-6 text-primary-foreground" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground text-sm line-clamp-2 flex items-center gap-2 mb-1">
+                        <BookOpen className="h-4 w-4 text-primary flex-shrink-0" />
+                        {progress.book_data?.livro || `Livro ID: ${progress.book_id}`}
+                      </h3>
+                      
+                      {progress.book_data?.autor && (
+                        <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
+                          por {progress.book_data.autor}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>
+                            Último acesso: {new Date(progress.last_accessed_at).toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            Iniciado: {new Date(progress.started_reading_at).toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {progress.book_data?.sobre && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-2 bg-primary/5 p-2 rounded border-l-2 border-primary/20">
+                          {progress.book_data.sobre}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CompactBookSearch } from '@/components/CompactBookSearch';
 import { useSubscriptionLimits } from '@/hooks/useSubscriptionLimits';
+import { supabase } from '@/integrations/supabase/client';
+import { BookItem } from '@/pages/Index';
 
 interface ReadingPlan {
   id: string;
@@ -25,6 +27,7 @@ interface ReadingPlan {
   created_at: string;
   updated_at: string;
   order: number;
+  book_cover?: string;
 }
 
 export default function PlanoLeitura() {
@@ -35,6 +38,7 @@ export default function PlanoLeitura() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<ReadingPlan | null>(null);
+  const [bookCovers, setBookCovers] = useState<{[key: string]: string}>({});
   const [formData, setFormData] = useState<{
     book_title: string;
     book_author: string;
@@ -57,6 +61,32 @@ export default function PlanoLeitura() {
     fetchReadingPlans();
   }, [user]);
 
+  const fetchBookCovers = async (plans: ReadingPlan[]) => {
+    const covers: {[key: string]: string} = {};
+    
+    for (const plan of plans) {
+      try {
+        const { data } = await supabase
+          .from("01. LIVROS-APP-NOVO" as any)
+          .select("imagem")
+          .eq("livro", plan.book_title)
+          .limit(1)
+          .single();
+        
+        if (data && typeof data === 'object' && !('error' in data!)) {
+          const bookData = data as any;
+          if (bookData?.imagem) {
+            covers[plan.id] = bookData.imagem;
+          }
+        }
+      } catch (error) {
+        console.log('Could not fetch cover for:', plan.book_title);
+      }
+    }
+    
+    setBookCovers(covers);
+  };
+
   const fetchReadingPlans = () => {
     if (!user) return;
 
@@ -64,7 +94,9 @@ export default function PlanoLeitura() {
       const savedPlans = localStorage.getItem(`reading_plans_${user.id}`);
       if (savedPlans) {
         const plans = JSON.parse(savedPlans);
-        setReadingPlans(plans.sort((a: ReadingPlan, b: ReadingPlan) => a.order - b.order));
+        const sortedPlans = plans.sort((a: ReadingPlan, b: ReadingPlan) => a.order - b.order);
+        setReadingPlans(sortedPlans);
+        fetchBookCovers(sortedPlans);
       }
     } catch (error) {
       console.error('Error fetching reading plans:', error);
@@ -441,103 +473,104 @@ export default function PlanoLeitura() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {readingPlans.map((plan, index) => (
               <Card key={plan.id} className="bg-gradient-card border-primary/20 hover:shadow-luxury transition-all duration-300 group">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2 text-foreground text-lg">
-                        {getStatusIcon(plan.status)}
-                        {plan.book_title}
-                      </CardTitle>
-                      {plan.book_author && (
-                        <p className="text-muted-foreground mt-1">✍️ por {plan.book_author}</p>
+                <CardContent className="p-4">
+                  <div className="flex gap-3">
+                    {/* Book Cover */}
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-20 bg-gradient-primary rounded-lg flex items-center justify-center overflow-hidden shadow-card">
+                        {bookCovers[plan.id] ? (
+                          <img 
+                            src={bookCovers[plan.id]} 
+                            alt={plan.book_title} 
+                            className="w-full h-full object-cover" 
+                          />
+                        ) : (
+                          <BookOpen className="h-6 w-6 text-primary-foreground" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground text-sm line-clamp-1 flex items-center gap-1.5">
+                            {getStatusIcon(plan.status)}
+                            {plan.book_title}
+                          </h3>
+                          {plan.book_author && (
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                              por {plan.book_author}
+                            </p>
+                          )}
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditDialog(plan)}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deletePlan(plan.id)}
+                            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Badges */}
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        <Badge className={`${getStatusColor(plan.status)} text-xs px-2 py-0.5`}>
+                          {plan.status.charAt(0).toUpperCase() + plan.status.slice(1)}
+                        </Badge>
+                        <Badge className={`${getPriorityColor(plan.priority)} text-xs px-2 py-0.5`}>
+                          {plan.priority}
+                        </Badge>
+                        {plan.target_date && (
+                          <Badge variant="outline" className="flex items-center gap-1 border-primary/20 text-xs px-2 py-0.5">
+                            <Calendar className="h-2.5 w-2.5" />
+                            {new Date(plan.target_date).toLocaleDateString('pt-BR', { 
+                              day: '2-digit', 
+                              month: '2-digit' 
+                            })}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {/* Progress Bar */}
+                      {plan.progress_percentage > 0 && (
+                        <div className="mb-2">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-muted-foreground">Progresso</span>
+                            <span className="text-foreground font-medium">{plan.progress_percentage}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                            <div 
+                              className="bg-gradient-primary h-full rounded-full transition-all duration-500" 
+                              style={{ width: `${plan.progress_percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Notes */}
+                      {plan.notes && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-2 bg-primary/5 p-2 rounded border-l-2 border-primary/20">
+                          {plan.notes}
+                        </p>
                       )}
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => movePlan(plan.id, 'up')}
-                        disabled={index === 0}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ArrowUp className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => movePlan(plan.id, 'down')}
-                        disabled={index === readingPlans.length - 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ArrowDown className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEditDialog(plan)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deletePlan(plan.id)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <Badge className={getStatusColor(plan.status)}>
-                      {plan.status.charAt(0).toUpperCase() + plan.status.slice(1)}
-                    </Badge>
-                    <Badge className={getPriorityColor(plan.priority)}>
-                      Prioridade {plan.priority}
-                    </Badge>
-                    {plan.target_date && (
-                      <Badge variant="outline" className="flex items-center gap-1 border-primary/20">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(plan.target_date).toLocaleDateString('pt-BR')}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  {plan.progress_percentage > 0 && (
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1 text-foreground">
-                        <span>📊 Progresso</span>
-                        <span className="font-medium">{plan.progress_percentage}%</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
-                        <div 
-                          className="bg-gradient-primary h-full rounded-full transition-all duration-500 shadow-glow" 
-                          style={{ width: `${plan.progress_percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  {plan.notes && (
-                    <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                      <p className="text-sm text-foreground leading-relaxed">💭 {plan.notes}</p>
-                    </div>
-                  )}
-                  
-                  <div className="text-xs text-muted-foreground mt-3 flex items-center justify-between">
-                    <span>📅 Adicionado em {new Date(plan.created_at).toLocaleDateString('pt-BR')}</span>
-                    {plan.status === 'lendo' && (
-                      <Badge variant="secondary" className="animate-pulse bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                        <BookOpen className="h-3 w-3 mr-1" />
-                        Lendo agora
-                      </Badge>
-                    )}
                   </div>
                 </CardContent>
               </Card>
