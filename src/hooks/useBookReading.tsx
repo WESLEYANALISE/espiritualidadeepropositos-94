@@ -142,7 +142,7 @@ export const useBookReading = (book: BookItem) => {
       return;
     }
 
-    if (subscription.subscription_tier === 'premium') {
+    if (subscription.subscription_tier === 'premium' || subscription.subscription_tier === 'vitalício') {
       if (book.download) {
         window.open(book.download, '_blank');
       } else {

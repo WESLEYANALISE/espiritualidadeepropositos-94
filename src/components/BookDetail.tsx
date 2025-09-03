@@ -109,54 +109,59 @@ export const BookDetail = ({
             </div>
             
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+            <div className="flex flex-col gap-3 justify-center max-w-md mx-auto">
+              {/* Main Read Button - Larger */}
               <Button 
                 onClick={handleReadNow} 
                 disabled={!book.link || (!user && !subscription.subscribed)} 
-                className="flex-1 flex items-center justify-center gap-2 h-12 text-sm font-medium"
+                className="w-full flex items-center justify-center gap-2 h-14 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {!user ? (
                   <>
                     <Lock className="h-5 w-5" />
-                    <span className="hidden xs:inline">Faça Login</span>
-                    <span className="xs:hidden">Login</span>
+                    <span>Faça Login para Ler</span>
                   </>
                 ) : !subscription.subscribed && !canReadToday ? (
                   <>
                     <Lock className="h-5 w-5" />
-                    <span className="hidden xs:inline">Limite Diário</span>
-                    <span className="xs:hidden">Limite</span>
+                    <span>Limite Diário Atingido</span>
                   </>
                 ) : (
                   <>
                     <BookOpen className="h-5 w-5" />
-                    <span className="hidden xs:inline">{subscription.subscribed ? 'Ler Agora' : 'Ler Grátis (30s)'}</span>
-                    <span className="xs:hidden">{subscription.subscribed ? 'Ler' : 'Grátis'}</span>
+                    <span>{subscription.subscribed ? 'Ler Agora' : 'Ler Grátis (30s)'}</span>
                   </>
                 )}
               </Button>
               
-              <Button 
-                variant={isReading ? "default" : "secondary"}
-                onClick={toggleReading}
-                className={`flex-1 flex items-center justify-center gap-2 h-12 text-sm font-medium ${isReading ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                disabled={!user}
-              >
-                <BookMarked className="h-5 w-5" />
-                <span className="hidden xs:inline">{isReading ? 'Lendo ✓' : 'Marcar como Lendo'}</span>
-                <span className="xs:hidden">{isReading ? 'Lendo' : 'Marcar'}</span>
-              </Button>
-              
-              <Button 
-                variant="secondary" 
-                onClick={handleDownload} 
-                className="flex-1 flex items-center justify-center gap-2 h-12 text-sm font-medium"
-                disabled={!user}
-              >
-                <Download className="h-5 w-5" />
-                <span className="hidden xs:inline">{subscription.subscription_tier === 'premium' ? 'Download' : 'Premium'}</span>
-                <span className="xs:hidden">{subscription.subscription_tier === 'premium' ? 'Down' : 'Pro'}</span>
-              </Button>
+              {/* Secondary Buttons - Side by side */}
+              <div className="flex gap-3">
+                <Button 
+                  variant={isReading ? "default" : "secondary"}
+                  onClick={toggleReading}
+                  className={`flex-1 flex items-center justify-center gap-2 h-12 text-sm font-medium ${isReading ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
+                  disabled={!user}
+                >
+                  <BookMarked className="h-4 w-4" />
+                  <span className="hidden xs:inline">{isReading ? 'Lendo ✓' : 'Marcar como Lendo'}</span>
+                  <span className="xs:hidden">{isReading ? 'Lendo' : 'Marcar'}</span>
+                </Button>
+                
+                <Button 
+                  variant="secondary" 
+                  onClick={handleDownload} 
+                  className="flex-1 flex items-center justify-center gap-2 h-12 text-sm font-medium"
+                  disabled={!user}
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="hidden xs:inline">
+                    {subscription.subscription_tier === 'premium' || subscription.subscription_tier === 'vitalício' ? 'Download' : 'Premium'}
+                  </span>
+                  <span className="xs:hidden">
+                    {subscription.subscription_tier === 'premium' || subscription.subscription_tier === 'vitalício' ? 'Down' : 'Pro'}
+                  </span>
+                </Button>
+              </div>
             </div>
 
             {/* Book Details */}
