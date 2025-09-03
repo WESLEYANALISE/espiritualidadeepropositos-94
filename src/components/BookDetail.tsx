@@ -109,26 +109,29 @@ export const BookDetail = ({
             </div>
             
             {/* Action Buttons */}
-            <div className="flex gap-2 justify-center max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
               <Button 
                 onClick={handleReadNow} 
                 disabled={!book.link || (!user && !subscription.subscribed)} 
-                className="flex-1 flex items-center gap-2"
+                className="flex-1 flex items-center justify-center gap-2 h-12 text-sm font-medium"
               >
                 {!user ? (
                   <>
-                    <Lock className="h-4 w-4" />
-                    Faça Login
+                    <Lock className="h-5 w-5" />
+                    <span className="hidden xs:inline">Faça Login</span>
+                    <span className="xs:hidden">Login</span>
                   </>
                 ) : !subscription.subscribed && !canReadToday ? (
                   <>
-                    <Lock className="h-4 w-4" />
-                    Limite Diário
+                    <Lock className="h-5 w-5" />
+                    <span className="hidden xs:inline">Limite Diário</span>
+                    <span className="xs:hidden">Limite</span>
                   </>
                 ) : (
                   <>
-                    <BookOpen className="h-4 w-4" />
-                    {subscription.subscribed ? 'Ler Agora' : 'Ler Grátis (30s)'}
+                    <BookOpen className="h-5 w-5" />
+                    <span className="hidden xs:inline">{subscription.subscribed ? 'Ler Agora' : 'Ler Grátis (30s)'}</span>
+                    <span className="xs:hidden">{subscription.subscribed ? 'Ler' : 'Grátis'}</span>
                   </>
                 )}
               </Button>
@@ -136,21 +139,23 @@ export const BookDetail = ({
               <Button 
                 variant={isReading ? "default" : "secondary"}
                 onClick={toggleReading}
-                className={`flex-1 flex items-center gap-2 ${isReading ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                className={`flex-1 flex items-center justify-center gap-2 h-12 text-sm font-medium ${isReading ? 'bg-green-600 hover:bg-green-700' : ''}`}
                 disabled={!user}
               >
-                <BookMarked className="h-4 w-4" />
-                {isReading ? 'Lendo ✓' : 'Marcar como Lendo'}
+                <BookMarked className="h-5 w-5" />
+                <span className="hidden xs:inline">{isReading ? 'Lendo ✓' : 'Marcar como Lendo'}</span>
+                <span className="xs:hidden">{isReading ? 'Lendo' : 'Marcar'}</span>
               </Button>
               
               <Button 
                 variant="secondary" 
                 onClick={handleDownload} 
-                className="flex-1 flex items-center gap-2"
+                className="flex-1 flex items-center justify-center gap-2 h-12 text-sm font-medium"
                 disabled={!user}
               >
-                <Download className="h-4 w-4" />
-                {subscription.subscription_tier === 'premium' ? 'Download' : 'Premium'}
+                <Download className="h-5 w-5" />
+                <span className="hidden xs:inline">{subscription.subscription_tier === 'premium' ? 'Download' : 'Premium'}</span>
+                <span className="xs:hidden">{subscription.subscription_tier === 'premium' ? 'Down' : 'Pro'}</span>
               </Button>
             </div>
 

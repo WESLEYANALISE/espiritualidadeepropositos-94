@@ -29,8 +29,8 @@ export const BottomNavigation = () => {
             {navItems.map(item => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
-              return <Button key={item.path} variant="ghost" onClick={() => navigate(item.path)} className={`flex flex-col items-center gap-1 h-auto py-2.5 px-2 rounded-xl transition-all duration-300 transform ${isActive ? 'text-primary bg-primary/15 shadow-glow scale-105 animate-bounce-in' : 'text-muted-foreground hover:text-foreground hover:bg-accent/30 hover:scale-110 hover:-translate-y-1'}`}>
-                  <Icon className="h-6 w-6" />
+              return <Button key={item.path} variant="ghost" onClick={() => navigate(item.path)} className={`flex flex-col items-center gap-1 h-auto py-3 px-2 rounded-xl transition-all duration-300 transform ${isActive ? 'text-primary bg-primary/15 shadow-glow scale-105 animate-bounce-in' : 'text-muted-foreground hover:text-foreground hover:bg-accent/30 hover:scale-110 hover:-translate-y-1'}`}>
+                  <Icon className="h-7 w-7" />
                   <span className="text-[10px] font-medium leading-none">{item.label}</span>
                 </Button>;
           })}
